@@ -1,0 +1,392 @@
+<html>
+
+<head>
+    <title>INDI Web UI</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.3.1/dist/semantic.min.css">
+
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/semantic-ui@2.3.1/dist/semantic.min.js"></script>
+    <script src="js/sprintf.js"></script>
+
+    <script src="js/json.js"></script>
+    <script src="js/server.js"></script>
+    <script src="js/client.js"></script>
+
+    <script>
+        function getGroups(device) {
+            var groups = [];
+
+            for (var x in device.textProperties) {
+                groups.push(device.textProperties[x].group);
+            }
+
+            for (var x in device.switchProperties) {
+                groups.push(device.switchProperties[x].group);
+            }
+
+            for (var x in device.numberProperties) {
+                groups.push(device.numberProperties[x].group);
+            }
+
+            for (var x in device.blobProperties) {
+                groups.push(device.blobProperties[x].group);
+            }
+
+            for (var x in device.lightProperties) {
+                groups.push(device.lightProperties[x].group);
+            }
+
+            return [...new Set(groups)].sort();
+        }
+
+        function renderClient(clientId, devices) {
+            var container = $('.accordion');
+
+            var title = $('.title.indi_client[data-id="' + clientId + '"]');
+            var content = $('.content.indi_client[data-id="' + clientId + '"]');
+
+            if (!title.length) {
+                title = $('<div class="title indi_client"><i class="dropdown icon"></i>INDI Client</div>').attr('data-id', clientId).appendTo(container);
+            }
+
+            if (!content.length) {
+                content = $('<div class="content indi_client"><button class="ui button client_disconnect">Disconnect</button></div>').attr('data-id', clientId).appendTo(container);
+            }
+
+            var tabs = content.children('.tabular.menu');
+
+            if (!tabs.length) {
+                tabs = $('<div class="ui top attached tabular menu"></div>').appendTo(content);
+            }
+
+            for (var i = 0; i < devices.length; i++) {
+                var device = devices[i];
+                var deviceTab = $(tabs).children('.item[data-tab="' + device.name + '"]');
+
+                if (!deviceTab.length) {
+                    deviceTab = $('<div class="item"></div>').
+                        attr('data-tab', device.name).
+                        text(device.name).
+                        appendTo(tabs);
+                }
+
+                var deviceContent = $(content).children('.tab[data-tab="' + device.name + '"]');
+
+                if (!deviceContent.length) {
+                    deviceContent = $('<div class="ui bottom attached tab segment"></div>').
+                        attr('data-tab', device.name).
+                        appendTo(content);
+                }
+
+                renderDevice(clientId, deviceContent, device);
+            }
+
+            tabs.children('.item').tab({ context: 'parent' });
+
+            var active = tabs.children('.item').filter('.active');
+            if (!active.length) {
+                $.tab('change tab', tabs.children('.item').first().addClass('active').attr('data-tab'));
+            }
+        }
+
+        function renderDevice(clientId, content, device) {
+            var tabs = content.children('.tabular.menu');
+
+            if (!tabs.length) {
+                tabs = $('<div class="ui top attached tabular menu"></div>').appendTo(content);
+            }
+
+            var groups = getGroups(device);
+
+            for (var i = 0; i < groups.length; i++) {
+                var group = groups[i];
+
+                var groupTab = $(tabs).children('.item[data-tab="' + group + '"]');
+
+                if (!groupTab.length) {
+                    groupTab = $('<div class="item"></div>').
+                        attr('data-tab', group).
+                        text(group).
+                        appendTo(tabs);
+                }
+
+                var groupContent = $(content).children('.tab[data-tab="' + group + '"]');
+
+                if (!groupContent.length) {
+                    groupContent = $('<div class="ui bottom attached tab segment"></div>').
+                        attr('data-tab', group).
+                        appendTo(content);
+                }
+
+                for (var p in device.textProperties) {
+                    var prop = device.textProperties[p];
+                    if (prop.group == group) {
+                        var form = $(groupContent).children('form[data-prop="' + prop.name + '"]');
+
+                        if (!form.length) {
+                            form = $('<form class="ui form"><h4 class="ui dividing header"><i class="icon circle"></i>' + prop.label + '</h4></form>').attr('data-prop', prop.name).appendTo(groupContent);
+                        }
+
+                        if (prop.state == "Idle") {
+                            form.find('.icon').addClass('grey').removeClass('green yellow red');
+                        } else if (prop.state == "Ok") {
+                            form.find('.icon').addClass('green').removeClass('grey yellow red');
+                        } else if (prop.state == "Busy") {
+                            form.find('.icon').addClass('yellow').removeClass('green grey red');
+                        } else if (prop.state == "Alert") {
+                            form.find('.icon').addClass('red').removeClass('green yellow grey');
+                        }
+
+                        for (var v in prop.values) {
+                            var value = prop.values[v];
+
+                            var field = form.children('.field[data-value="' + value.name + '"]');
+
+                            if (!field.length) {
+                                field = $('<div class="field"><label>' + value.label + '</label><input type="text" name="' + value.name + '"></div>').attr('data-value', value.name).appendTo(form);
+                            }
+
+                            field.find('input').not(':focus').val(value.value);
+                        }
+
+                        if (prop.permissions == 'ro') {
+                            form.find('input').prop("readonly", true);
+                        }
+                    }
+                }
+
+                for (var p in device.numberProperties) {
+                    var prop = device.numberProperties[p];
+                    if (prop.group == group) {
+                        var form = $(groupContent).children('form[data-prop="' + prop.name + '"]');
+
+                        if (!form.length) {
+                            form = $('<form class="ui form"><h4 class="ui dividing header"><i class="icon circle"></i>' + prop.label + '</h4></form>').attr('data-prop', prop.name).appendTo(groupContent);
+                        }
+
+                        if (prop.state == "Idle") {
+                            form.find('.icon').addClass('grey').removeClass('green yellow red');
+                        } else if (prop.state == "Ok") {
+                            form.find('.icon').addClass('green').removeClass('grey yellow red');
+                        } else if (prop.state == "Busy") {
+                            form.find('.icon').addClass('yellow').removeClass('green grey red');
+                        } else if (prop.state == "Alert") {
+                            form.find('.icon').addClass('red').removeClass('green yellow grey');
+                        }
+
+                        for (var v in prop.values) {
+                            var value = prop.values[v];
+
+                            var field = form.children('.field[data-value="' + value.name + '"]');
+
+                            if (!field.length) {
+                                field = $('<div class="field"><label>' + value.label + '</label><input type="text" name="' + value.name + '"></div>').attr('data-value', value.name).appendTo(form);
+                            }
+
+                            // TODO: Format numeric value
+                            field.find('input').not(':focus').val(value.value);
+                        }
+
+                        if (prop.permissions == 'ro') {
+                            form.find('input').prop("readonly", true);
+                        }
+                    }
+                }
+
+                for (var p in device.switchProperties) {
+                    var prop = device.switchProperties[p];
+                    if (prop.group == group) {
+                        var form = $(groupContent).children('form[data-prop="' + prop.name + '"]');
+
+                        if (!form.length) {
+                            form = $('<form class="ui form"><h4 class="ui dividing header"><i class="icon circle"></i>' + prop.label + '</h4></form>').attr('data-prop', prop.name).appendTo(groupContent);
+                        }
+
+                        if (prop.state == "Idle") {
+                            form.find('.icon').addClass('grey').removeClass('green yellow red');
+                        } else if (prop.state == "Ok") {
+                            form.find('.icon').addClass('green').removeClass('grey yellow red');
+                        } else if (prop.state == "Busy") {
+                            form.find('.icon').addClass('yellow').removeClass('green grey red');
+                        } else if (prop.state == "Alert") {
+                            form.find('.icon').addClass('red').removeClass('green yellow grey');
+                        }
+
+                        for (var v in prop.values) {
+                            var value = prop.values[v];
+
+                            var field = form.children('.field[data-value="' + value.name + '"]');
+
+                            if (!field.length) {
+                                field = $('<div class="field"><div class="ui toggle checkbox"><input name="' + value.name + '" class="hidden" type="checkbox"><label>' + value.label + '</label></div></div>').
+                                attr('data-value', value.name).
+                                attr('data-prop', prop.name).
+                                attr('data-device', device.name).
+                                attr('data-clientId', clientId).
+                                appendTo(form);
+                            }
+
+                            var toggle = field.find('.checkbox').checkbox({
+                                onChecked: function() {
+                                    var obj = $(this).parent().parent();
+
+                                    setSwitchValue(obj.attr('data-clientId'), obj.attr('data-device'), obj.attr('data-prop'), obj.attr('data-value'), "On");
+                                }
+                            });
+
+                            if (value.value == "On") {
+                                toggle.checkbox('set checked');
+                            } else {
+                                toggle.checkbox('set unchecked');
+                            }
+                        }
+
+                        if (prop.permissions == 'ro') {
+                            form.find('input').prop("readonly", true);
+                        }
+                    }
+                }
+            }
+
+            tabs.children('.item').tab({ context: 'parent' });
+
+            var active = tabs.children('.item').filter('.active');
+            if (!active.length) {
+                $.tab('change tab', tabs.children('.item').first().addClass('active').attr('data-tab'));
+            }
+        }
+
+        function clientConnect(address, button) {
+            postJSON('/api/connect', {
+                network: 'tcp',
+                address: address
+            }, function (data) {
+                button.parent().prev().attr("data-id", data.clientId);
+                button.parent().attr("data-id", data.clientId);
+            }, function (xhr) {
+                console.log(xhr.responseJSON.error);
+            })
+        }
+
+        $(document).on('click', '.message>i.close', function () {
+            $(this).parent().hide(500);
+        })
+
+        $(document).on('click', '#server_start', startServer);
+        $(document).on('click', '#server_stop', stopServer);
+
+        $(document).on('click', '.client_connect', function () {
+            var address = $(this).parent().find('.client_address').val();
+
+            clientConnect(address, $(this));
+        });
+
+        $(document)
+            .ready(function () {
+                $('.ui.accordion').accordion({
+                    animateChildren: false
+                });
+
+                checkClientsIn(10);
+
+                getJSON("/api/server/drivers", function (drivers) {
+                    var driverContent = [];
+                    $.each(drivers, function (group) {
+                        var opts = [];
+                        $.each(drivers[group], function (i, driver) {
+                            opts.push($('<option value="' + driver.Driver + '|' + driver.Label + '">' + driver.Label + '</option>'));
+                        })
+
+                        var select = $('<select class="ui fluid search dropdown server_driver" multiple=""></select>').append(opts).dropdown({
+                            sortSelect: true,
+                            onAdd: function (addedValue, addedText) {
+                                var data = addedValue.split('|');
+                                startDriver(data[0], data[1]);
+                            },
+                            onRemove(removedValue, removedText) {
+                                var data = removedValue.split('|');
+                                stopDriver(data[0], data[1]);
+                            }
+                        });
+
+                        driverContent.push($('<div class="field"><label>' + group + '</label></div>').append(select));
+                    })
+
+                    $('#server_drivers_container').append(driverContent);
+                });
+            });
+    </script>
+</head>
+
+<body>
+    <div class="pusher">
+        <div class="ui inverted vertical stripe segment">
+            <div class="ui middle aligned stackable container">
+                <h1 class="ui inverted header">INDI Web UI</h1>
+            </div>
+        </div>
+
+        <div class="ui vertical stripe segment">
+            <div class="ui middle aligned stackable container">
+                <div class="ui styled fluid accordion">
+                    <div class="title">
+                        <i class="dropdown icon"></i>
+                        INDI Server
+                    </div>
+                    <div class="content">
+                        <div class="ui message hidden" id="server_message">
+                            <i class="close icon"></i>
+                            <p></p>
+                        </div>
+                        <button class="ui button" id="server_start">Start Server</button>
+                        <button class="ui button" id="server_stop">Stop Server</button>
+
+                        <div class="ui form" id="server_drivers_container">
+                        </div>
+                    </div>
+                    <!--
+                    <div class="active title indi_client">
+                        <i class="dropdown icon"></i>
+                        INDI Client
+                    </div>
+                    <div class="active content indi_client">
+                        <div class="ui form">
+                            <div class="fields">
+                                <div class="field">
+                                    <label>Server</label>
+                                    <input class="client_address" placeholder="localhost:7624" type="text">
+                                </div>
+                            </div>
+                        </div>
+                        <button class="ui button client_connect">Connect</button>
+                        <button class="ui button client_disconnect">Disconnect</button>
+
+                        <div class="ui top attached tabular menu">
+                            <div class="active item">Tab</div>
+                        </div>
+
+                        <div class="ui bottom attached active tab segment">
+                            <p></p>
+                            <p></p>
+                        </div>
+                    </div>
+-->
+                </div>
+                <button class="ui button" id="client_add">Add Client</button>
+            </div>
+        </div>
+
+        <div class="ui inverted vertical footer segment">
+            <div class="ui container">
+                <div class="ui stackable inverted divided equal height stackable grid">
+                    <p>
+                        Copyright 2018 Rick Bassham
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
