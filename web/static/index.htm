@@ -220,15 +220,15 @@
 
                             if (!field.length) {
                                 field = $('<div class="field"><div class="ui toggle checkbox"><input name="' + value.name + '" class="hidden" type="checkbox"><label>' + value.label + '</label></div></div>').
-                                attr('data-value', value.name).
-                                attr('data-prop', prop.name).
-                                attr('data-device', device.name).
-                                attr('data-clientId', clientId).
-                                appendTo(form);
+                                    attr('data-value', value.name).
+                                    attr('data-prop', prop.name).
+                                    attr('data-device', device.name).
+                                    attr('data-clientId', clientId).
+                                    appendTo(form);
                             }
 
                             var toggle = field.find('.checkbox').checkbox({
-                                onChecked: function() {
+                                onChecked: function () {
                                     var obj = $(this).parent().parent();
 
                                     setSwitchValue(obj.attr('data-clientId'), obj.attr('data-device'), obj.attr('data-prop'), obj.attr('data-value'), "On");
@@ -345,33 +345,39 @@
                         <div class="ui form" id="server_drivers_container">
                         </div>
                     </div>
-                    <!--
+
                     <div class="active title indi_client">
                         <i class="dropdown icon"></i>
                         INDI Client
                     </div>
                     <div class="active content indi_client">
-                        <div class="ui form">
-                            <div class="fields">
-                                <div class="field">
-                                    <label>Server</label>
-                                    <input class="client_address" placeholder="localhost:7624" type="text">
+                        <div class="ui grid">
+                            <div class="four wide column">
+                                <div class="ui vertical tabular menu">
+                                    <a class="active item" data-tab="test1">
+                                        Bio
+                                    </a>
+                                    <a class="item" data-tab="test2">
+                                        Pics
+                                    </a>
+                                    <a class="item">
+                                        Companies
+                                    </a>
+                                    <a class="item">
+                                        Links
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="twelve wide stretched column">
+                                <div class="ui content" data-tab="test1">
+                                    This is an stretched grid column. This segment will always match the tab height
+                                </div>
+                                <div class="ui content" data-tab="test2">
+                                    This is an stretched grid column. This segment will always match the tab height
                                 </div>
                             </div>
                         </div>
-                        <button class="ui button client_connect">Connect</button>
-                        <button class="ui button client_disconnect">Disconnect</button>
-
-                        <div class="ui top attached tabular menu">
-                            <div class="active item">Tab</div>
-                        </div>
-
-                        <div class="ui bottom attached active tab segment">
-                            <p></p>
-                            <p></p>
-                        </div>
                     </div>
--->
                 </div>
                 <button class="ui button" id="client_add">Add Client</button>
             </div>

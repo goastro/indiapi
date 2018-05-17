@@ -54,7 +54,7 @@ func mainWithStatusCode() (statusCode int) {
 	indiRoutes := routes.NewINDIRoutes(svc)
 
 	router := router.NewRouter(listenAddress, requestLogger, indiRoutes)
-	router.StaticFiles("/", afero.NewBasePathFs(afero.NewOsFs(), "./web/static"))
+	router.StaticFiles("/", afero.NewBasePathFs(afero.NewOsFs(), "./web/build"))
 
 	logger.WithField("listenAddress", listenAddress).Info("listening...")
 
