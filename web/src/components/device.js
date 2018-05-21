@@ -1,5 +1,5 @@
 import React from 'react';
-import { Container, Accordion } from 'semantic-ui-react'
+import { Container, Accordion, Divider, List } from 'semantic-ui-react'
 import Group from './group.js';
 
 function getGroups(device) {
@@ -76,8 +76,6 @@ class Device extends React.Component {
     static getDerivedStateFromProps(nextProps, prevState) {
         const {device} = nextProps;
 
-        console.log(device);
-
         const groups = getGroups(device);
 
         return {
@@ -95,12 +93,16 @@ class Device extends React.Component {
 
     render() {
         const { groups, activeKey } = this.state;
+        const { onUpdate, clientId, device } = this.props;
 
         return (
             <Container>
-                {Object.entries(groups).map((group) => {
-                    return <Group key={group[0]} active={activeKey === group[0]} name={group[0]} properties={group[1]} onClick={() => this.handleClick(group[0]) } />
+                {Object.entries(groups).sort((a, b) => a[0].localeCompare(b[0])).map((group) => {
+                    return <Group key={group[0]} active={activeKey === group[0]} name={group[0]} clientId={clientId} deviceName={device.name} properties={group[1]} onClick={() => this.handleClick(group[0]) } onUpdate={onUpdate} />
                 })}
+                <List>
+                    {device.messages.map((m) => <List.Item>{m.timestamp} - {m.message}</List.Item>)}
+                </List>
             </Container>
         );
     }

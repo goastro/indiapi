@@ -23,14 +23,14 @@ class Group extends React.Component {
 
     render() {
         const { name, properties } = this.state;
-        const { active, onClick } = this.props;
+        const { active, onClick, onUpdate, clientId, deviceName } = this.props;
 
         return (
             <Segment>
                 <Header as='h3'>{name}</Header>
                 <Form>
                     {properties.map((property) => {
-                        return <Property key={property.name} property={property} />
+                        return <Property key={property.name} clientId={clientId} deviceName={deviceName} property={property} onUpdate={onUpdate} />
                     })}
                 </Form>
             </Segment>

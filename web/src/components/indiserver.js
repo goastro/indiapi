@@ -12,6 +12,9 @@ class INDIServer extends React.Component {
             isLoaded: false,
             error: null
         };
+
+        this.handleDriverAdded.bind(this);
+        this.handleDriverRemoved.bind(this);
     }
 
     componentDidMount() {
@@ -32,7 +35,51 @@ class INDIServer extends React.Component {
     }
 
     startServer() {
-        console.log("start server")
+        fetch('http://localhost:8080/api/server/start', {
+            method: 'POST'
+        });
+    }
+
+    stopServer() {
+        fetch('http://localhost:8080/api/server/stop', {
+            method: 'POST'
+        });
+    }
+
+    startDriver(driver, name) {
+        fetch('http://localhost:8080/api/server/drivers/start', {
+            method: 'POST',
+            body: JSON.stringify({
+                driver: driver,
+                name: name
+            }),
+            headers: {
+                'content-type': 'application/json'
+            },
+            mode: 'cors'
+        });
+    }
+
+    stopDriver(driver, name) {
+        fetch('http://localhost:8080/api/server/drivers/stop', {
+            method: 'POST',
+            body: JSON.stringify({
+                driver: driver,
+                name: name
+            }),
+            headers: {
+                'content-type': 'application/json'
+            },
+            mode: 'cors'
+        });
+    }
+
+    handleDriverAdded(driver, name) {
+        this.startDriver(driver, name);
+    }
+
+    handleDriverRemoved(driver, name) {
+        this.stopDriver(driver, name);
     }
 
     render() {
@@ -51,8 +98,8 @@ class INDIServer extends React.Component {
                     </Form.Field>
                     <Divider />
                 {Object.entries(drivers).map(function(v) {
-                    return <DriverGroup key={v[0]} name={v[0]} drivers={v[1]} />
-                })}
+                    return <DriverGroup key={v[0]} name={v[0]} drivers={v[1].sort((a, b) => a.Label.localeCompare(b.Label))} onDriverAdded={this.startDriver} onDriverRemoved={this.stopDriver} />
+                }, this)}
                 </Form>
             </Segment>);
         }

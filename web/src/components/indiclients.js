@@ -21,7 +21,7 @@ class INDIClients extends React.Component {
             .then((result) => {
                 this.setState({
                     isLoaded: true,
-                    clients: result.clients
+                    clients: result.clients.sort((a, b) => a.clientId.localeCompare(b.clientId))
                 });
             }, (error) => {
                 this.setState({
@@ -31,8 +31,8 @@ class INDIClients extends React.Component {
                 });
             });
 
-            setTimeout(this.getClients.bind(this), 30000);
-        }
+        setTimeout(this.getClients.bind(this), 10000);
+    }
 
     componentDidMount() {
         this.getClients();
@@ -44,13 +44,11 @@ class INDIClients extends React.Component {
 
         const newKey = (activeKey === clientId) ? null : clientId;
 
-
-
         this.setState({ activeKey: newKey });
     }
 
     render() {
-        const { activeKey, clients } = this.state
+        const { activeKey, clients } = this.state;
         return (
             <Container>
                 <Accordion fluid styled>
