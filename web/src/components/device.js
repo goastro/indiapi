@@ -101,7 +101,7 @@ class Device extends React.Component {
                     return <Group key={group[0]} active={activeKey === group[0]} name={group[0]} clientId={clientId} deviceName={device.name} properties={group[1]} onClick={() => this.handleClick(group[0]) } onUpdate={onUpdate} />
                 })}
                 <List>
-                    {device.messages.map((m) => <List.Item>{m.timestamp} - {m.message}</List.Item>)}
+                    {device.messages === null ? null : device.messages.map((m) => <List.Item>{m.timestamp} - {m.message}</List.Item>)}
                 </List>
             </Container>
         );

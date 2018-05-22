@@ -5,8 +5,8 @@ import (
 	"net/http"
 
 	"github.com/goastro/indiclient"
+	"github.com/google/uuid"
 	"github.com/rickbassham/goapi/requestparser"
-	"github.com/satori/go.uuid"
 )
 
 type PostConnectRequestBody struct {
@@ -47,7 +47,7 @@ func (svc *INDIService) PostConnect(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	clientID, _ := uuid.NewV4()
+	clientID := uuid.New()
 	c := indiclient.NewINDIClient(log, svc.dialer, svc.fs, svc.bufferSize)
 	svc.addClient(clientID.String(), c)
 
