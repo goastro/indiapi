@@ -10,6 +10,7 @@ import (
 type INDIHandlers interface {
 	GetClients(w http.ResponseWriter, r *http.Request)
 	PostConnect(w http.ResponseWriter, r *http.Request)
+	PostDisconnect(w http.ResponseWriter, r *http.Request)
 	GetDevices(w http.ResponseWriter, r *http.Request)
 	PostSetSwitchValue(w http.ResponseWriter, r *http.Request)
 	PostSetNumberValue(w http.ResponseWriter, r *http.Request)
@@ -39,24 +40,28 @@ func (svc *indiRoutes) CreateRoutes(r chi.Router) chi.Router {
 	r.Post("/connect", svc.handlerService.PostConnect)
 	r.Get("/clients", svc.handlerService.GetClients)
 
-	r.Route("/{clientId}/devices", func(r chi.Router) {
-		r.Get("/", svc.handlerService.GetDevices)
+	r.Route("/{clientId}", func(r chi.Router) {
+		r.Post("/disconnect", svc.handlerService.PostDisconnect)
 
-		r.Route("/enableblob", func(r chi.Router) {
-			r.Post("/set", svc.handlerService.PostEnableBlob)
-		})
-		r.Route("/switches", func(r chi.Router) {
-			r.Post("/set", svc.handlerService.PostSetSwitchValue)
-		})
-		r.Route("/texts", func(r chi.Router) {
-			r.Post("/set", svc.handlerService.PostSetTextValue)
-		})
-		r.Route("/numbers", func(r chi.Router) {
-			r.Post("/set", svc.handlerService.PostSetNumberValue)
-		})
+		r.Route("/devices", func(r chi.Router) {
+			r.Get("/", svc.handlerService.GetDevices)
 
-		r.Get("/{deviceName}/blobs/{propName}/{blobName}", svc.handlerService.GetBlob)
-		r.Get("/{deviceName}/blobs/{propName}/{blobName}/stream", svc.handlerService.GetBlobStream)
+			r.Route("/enableblob", func(r chi.Router) {
+				r.Post("/set", svc.handlerService.PostEnableBlob)
+			})
+			r.Route("/switches", func(r chi.Router) {
+				r.Post("/set", svc.handlerService.PostSetSwitchValue)
+			})
+			r.Route("/texts", func(r chi.Router) {
+				r.Post("/set", svc.handlerService.PostSetTextValue)
+			})
+			r.Route("/numbers", func(r chi.Router) {
+				r.Post("/set", svc.handlerService.PostSetNumberValue)
+			})
+
+			r.Get("/{deviceName}/blobs/{propName}/{blobName}", svc.handlerService.GetBlob)
+			r.Get("/{deviceName}/blobs/{propName}/{blobName}/stream", svc.handlerService.GetBlobStream)
+		})
 	})
 
 	r.Route("/server", func(r chi.Router) {

@@ -97,3 +97,7 @@ func (svc *INDIService) getClient(clientID string) INDIClient {
 func (svc *INDIService) addClient(clientID string, c INDIClient) {
 	svc.clients.Store(clientID, c)
 }
+
+func (svc *INDIService) removeClient(clientID string) {
+	svc.clients.Delete(clientID)
+}

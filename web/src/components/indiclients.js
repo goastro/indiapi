@@ -29,7 +29,7 @@ class INDIClients extends React.Component {
                 'content-type': 'application/json'
             },
             mode: 'cors'
-        }).then(this.getClients);
+        }).then(() => this.getClients());
     }
 
     getClients() {
@@ -59,12 +59,10 @@ class INDIClients extends React.Component {
 
     handleSubmit() {
         const { network, address } = this.state;
-
         this.connect(network, address);
     }
 
     handleChange(e, { name, value }) {
-        console.log([name, value]);
         this.setState({ [name]: value });
     }
 
@@ -79,6 +77,7 @@ class INDIClients extends React.Component {
 
     render() {
         const { activeKey, clients } = this.state;
+        console.log('render');
         return (
             <Container>
                 <Accordion fluid styled>

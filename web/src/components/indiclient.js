@@ -1,5 +1,5 @@
 import React from 'react';
-import { Accordion, Icon, Tab } from 'semantic-ui-react';
+import { Accordion, Icon, Tab, Button, Divider } from 'semantic-ui-react';
 import Device from './device.js';
 
 class INDIClient extends React.Component {
@@ -33,13 +33,22 @@ class INDIClient extends React.Component {
                 this.setState({
                     devices: devices.sort((a, b) => a.name.localeCompare(b.name))
                 });
+                this.pendingRequest = setTimeout(this.getDevices.bind(this), 10000);
             }, (error) => {
                 this.setState({
                     devices: []
                 });
+                this.pendingRequest = setTimeout(this.getDevices.bind(this), 10000);
             });
+    }
 
-        this.pendingRequest = setTimeout(this.getDevices.bind(this), 10000);
+    disconnect() {
+        const { clientId } = this.props;
+
+        fetch('http://localhost:8080/api/' + clientId + '/disconnect', {
+            method: 'POST',
+            mode: 'cors'
+        });
     }
 
     updateValue(device, property, valueName, value, type) {
@@ -106,6 +115,8 @@ class INDIClient extends React.Component {
                     INDI Client
                 </Accordion.Title>
                 <Accordion.Content active={active}>
+                    <Button onClick={this.disconnect.bind(this)}>Disconnect</Button>
+                    <Divider />
                     <Tab panes={panes} />
                 </Accordion.Content>
             </div>
