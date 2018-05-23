@@ -58,7 +58,7 @@
   branch = "master"
   name = "github.com/goastro/indiclient"
   packages = ["."]
-  revision = "7ba55cc8675728e62b918d4ac79204e1fb31d958"
+  revision = "c1822e7dda8618f4f76663aa98ddb1b8c044f159"
 
 [[projects]]
   branch = "master"
